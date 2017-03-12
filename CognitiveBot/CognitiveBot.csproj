@@ -144,12 +144,27 @@
   <ItemGroup>
     <Content Include="default.htm" />
     <Content Include="Global.asax" />
+    <Content Include="libs\bootstrap\css\bootstrap-theme.css" />
+    <Content Include="libs\bootstrap\css\bootstrap-theme.min.css" />
+    <Content Include="libs\bootstrap\css\bootstrap.css" />
+    <Content Include="libs\bootstrap\css\bootstrap.min.css" />
+    <Content Include="libs\bootstrap\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="libs\bootstrap\js\bootstrap.js" />
+    <Content Include="libs\bootstrap\js\bootstrap.min.js" />
+    <Content Include="libs\bootstrap\js\npm.js" />
+    <Content Include="libs\font-awesome\css\font-awesome.css" />
+    <Content Include="libs\font-awesome\css\font-awesome.min.css" />
+    <Content Include="libs\font-awesome\fonts\fontawesome-webfont.svg" />
+    <Content Include="libs\font-awesome\HELP-US-OUT.txt" />
+    <Content Include="libs\jquery.min.js" />
+    <Content Include="Logo.png" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="CognitiveServiceHelper.cs" />
     <Compile Include="CognitiveServicesAuthorizationProvider.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Global.asax.cs">
@@ -159,6 +174,47 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <Content Include="libs\bootstrap\css\bootstrap-theme.css.map" />
+    <Content Include="libs\bootstrap\css\bootstrap-theme.min.css.map" />
+    <Content Include="libs\bootstrap\css\bootstrap.css.map" />
+    <Content Include="libs\bootstrap\css\bootstrap.min.css.map" />
+    <Content Include="libs\bootstrap\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="libs\bootstrap\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="libs\bootstrap\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="libs\bootstrap\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="libs\font-awesome\fonts\fontawesome-webfont.eot" />
+    <Content Include="libs\font-awesome\fonts\fontawesome-webfont.ttf" />
+    <Content Include="libs\font-awesome\fonts\fontawesome-webfont.woff" />
+    <Content Include="libs\font-awesome\fonts\fontawesome-webfont.woff2" />
+    <Content Include="libs\font-awesome\fonts\FontAwesome.otf" />
+    <Content Include="libs\font-awesome\less\animated.less" />
+    <Content Include="libs\font-awesome\less\bordered-pulled.less" />
+    <Content Include="libs\font-awesome\less\core.less" />
+    <Content Include="libs\font-awesome\less\fixed-width.less" />
+    <Content Include="libs\font-awesome\less\font-awesome.less" />
+    <Content Include="libs\font-awesome\less\icons.less" />
+    <Content Include="libs\font-awesome\less\larger.less" />
+    <Content Include="libs\font-awesome\less\list.less" />
+    <Content Include="libs\font-awesome\less\mixins.less" />
+    <Content Include="libs\font-awesome\less\path.less" />
+    <Content Include="libs\font-awesome\less\rotated-flipped.less" />
+    <Content Include="libs\font-awesome\less\screen-reader.less" />
+    <Content Include="libs\font-awesome\less\stacked.less" />
+    <Content Include="libs\font-awesome\less\variables.less" />
+    <Content Include="libs\font-awesome\scss\font-awesome.scss" />
+    <Content Include="libs\font-awesome\scss\_animated.scss" />
+    <Content Include="libs\font-awesome\scss\_bordered-pulled.scss" />
+    <Content Include="libs\font-awesome\scss\_core.scss" />
+    <Content Include="libs\font-awesome\scss\_fixed-width.scss" />
+    <Content Include="libs\font-awesome\scss\_icons.scss" />
+    <Content Include="libs\font-awesome\scss\_larger.scss" />
+    <Content Include="libs\font-awesome\scss\_list.scss" />
+    <Content Include="libs\font-awesome\scss\_mixins.scss" />
+    <Content Include="libs\font-awesome\scss\_path.scss" />
+    <Content Include="libs\font-awesome\scss\_rotated-flipped.scss" />
+    <Content Include="libs\font-awesome\scss\_screen-reader.scss" />
+    <Content Include="libs\font-awesome\scss\_stacked.scss" />
+    <Content Include="libs\font-awesome\scss\_variables.scss" />
     <None Include="Properties\PublishProfiles\CognitiveBot - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
