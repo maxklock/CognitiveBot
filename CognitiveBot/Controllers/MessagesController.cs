@@ -12,9 +12,12 @@ namespace CognitiveBot
 {
     using System.Configuration;
     using System.Text;
+    using System.Threading;
 
+    using Microsoft.Bing.Speech;
     using Microsoft.Bot.Builder.Dialogs.Internals;
     using Microsoft.ProjectOxford.Face;
+    using Microsoft.ProjectOxford.Vision;
 
     [BotAuthentication]
     public class MessagesController : ApiController
@@ -26,6 +29,8 @@ namespace CognitiveBot
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
             var faceClient = new FaceServiceClient(ConfigurationManager.AppSettings["FaceApi"]);
+            var visionClient = new VisionServiceClient(ConfigurationManager.AppSettings["VisionApi"]);
+
             var connectorClient = new ConnectorClient(new Uri(activity.ServiceUrl));
             if (activity.Type == ActivityTypes.Message)
             {
@@ -64,7 +69,7 @@ namespace CognitiveBot
                     }
                     catch (Exception ex)
                     {
-                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}]: {ex.Message}"));
+                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}] {ex.Message}"));
                     }
                 }
                 if (activity.Text == "count")
@@ -86,6 +91,54 @@ namespace CognitiveBot
                                 connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think there are {result.Length} faces."));
                                 break;
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}] {ex.Message}"));
+                    }
+                }
+                if (activity.Text == "content")
+                {
+
+                    var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
+                    var image = data.GetProperty<string>("image");
+                    try
+                    {
+                        var result = await visionClient.AnalyzeImageAsync(image, new[] { VisualFeature.Tags, VisualFeature.Description });
+                        var builder = new StringBuilder();
+                        builder.AppendLine("I found the following content:  ");
+                        builder.Append(result.Description.Captions.OrderByDescending(c => c.Confidence).FirstOrDefault()?.Text ?? "No description");
+                        builder.AppendLine("  ");
+                        builder.AppendLine(result.Tags.Aggregate("", (res, t) => res + t.Name + " (" + t.Confidence.ToString("0.00") + ")  \n"));
+                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
+                    }
+                    catch (Exception ex)
+                    {
+                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}]: {ex.Message}"));
+                    }
+                }
+                if (activity.Text == "text")
+                {
+                    var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
+                    var image = data.GetProperty<string>("image");
+                    try
+                    {
+                        var result = await visionClient.RecognizeTextAsync(image);
+                        var builder = new StringBuilder();
+                        builder.AppendLine("I think the text on the image is:  ");
+                        foreach (var region in result.Regions)
+                        {
+                            foreach (var line in region.Lines)
+                            {
+                                foreach (var word in line.Words)
+                                {
+                                    builder.Append(word.Text + " ");
+                                }
+                                builder.AppendLine(" ");
+                            }
+                            builder.AppendLine("-  ");
+                        }
+                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
                     }
                     catch (Exception ex)
                     {
