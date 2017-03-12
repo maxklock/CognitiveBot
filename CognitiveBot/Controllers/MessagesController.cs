@@ -43,6 +43,15 @@ namespace CognitiveBot
                 {
                     var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
                     var image = data.GetProperty<string>("image");
+                    if (image == null)
+                    {
+                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I can't work without an image. Please send me one."));
+                        return Request.CreateResponse(HttpStatusCode.OK);
+                    }
+
+                    var typing = activity.CreateReply(string.Empty);
+                    typing.Type = ActivityTypes.Typing;
+                    await connectorClient.Conversations.ReplyToActivityAsync(typing);
 
                     try
                     {
@@ -80,7 +89,7 @@ namespace CognitiveBot
                                     connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I can't recognize a face. Try a new image."));
                                     break;
                                 case 1:
-                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think the person {result[0].FaceAttributes.Age} years old."));
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think the person is {result[0].FaceAttributes.Age} years old."));
                                     break;
                                 default:
                                     var builder = new StringBuilder();
@@ -135,13 +144,13 @@ namespace CognitiveBot
                         else
                         {
                             connectorClient.Conversations.ReplyToActivity(
-                                activity.CreateReply("Sry, but I didn't understand you. Try something like `What's the age of the person?` or `What's the text on the image?`"));
+                                activity.CreateReply("Sorry, but I didn't understand you. Try something like `What's the age of the person?` or `What's the text on the image?`"));
                         }
                     }
                     catch (Exception ex)
                     {
                         connectorClient.Conversations.ReplyToActivity(
-                            activity.CreateReply($"{ex.GetType().Name}: {ex.Message}"));
+                            activity.CreateReply("Sry, but I made a misstake and didn't understand you. Try something like `What's the age of the person?` or `What's the text on the image?`"));
                     }
                 }
             }
@@ -149,34 +158,32 @@ namespace CognitiveBot
             {
                 HandleSystemMessage(activity);
             }
-            var response = Request.CreateResponse(HttpStatusCode.OK);
-            return response;
+
+            return Request.CreateResponse(HttpStatusCode.OK);
         }
 
-        private Activity HandleSystemMessage(Activity message)
+        private static Activity HandleSystemMessage(IActivity message)
         {
-            if (message.Type == ActivityTypes.DeleteUserData)
+            switch (message.Type)
             {
-                // Implement user deletion here
-                // If we handle user deletion, return a real message
-            }
-            else if (message.Type == ActivityTypes.ConversationUpdate)
-            {
-                // Handle conversation state changes, like members being added and removed
-                // Use Activity.MembersAdded and Activity.MembersRemoved and Activity.Action for info
-                // Not available in all channels
-            }
-            else if (message.Type == ActivityTypes.ContactRelationUpdate)
-            {
-                // Handle add/remove from contact lists
-                // Activity.From + Activity.Action represent what happened
-            }
-            else if (message.Type == ActivityTypes.Typing)
-            {
-                // Handle knowing tha the user is typing
-            }
-            else if (message.Type == ActivityTypes.Ping)
-            {
+                case ActivityTypes.DeleteUserData:
+                    // Implement user deletion here
+                    // If we handle user deletion, return a real message
+                    break;
+                case ActivityTypes.ConversationUpdate:
+                    // Handle conversation state changes, like members being added and removed
+                    // Use Activity.MembersAdded and Activity.MembersRemoved and Activity.Action for info
+                    // Not available in all channels
+                    break;
+                case ActivityTypes.ContactRelationUpdate:
+                    // Handle add/remove from contact lists
+                    // Activity.From + Activity.Action represent what happened
+                    break;
+                case ActivityTypes.Typing:
+                    // Handle knowing tha the user is typing
+                    break;
+                case ActivityTypes.Ping:
+                    break;
             }
 
             return null;
