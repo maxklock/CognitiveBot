@@ -16,6 +16,7 @@ namespace CognitiveBot
 
     using Microsoft.Bing.Speech;
     using Microsoft.Bot.Builder.Dialogs.Internals;
+    using Microsoft.Cognitive.LUIS;
     using Microsoft.ProjectOxford.Face;
     using Microsoft.ProjectOxford.Vision;
 
@@ -38,131 +39,109 @@ namespace CognitiveBot
                     await activity.GetStateClient().BotState.SetConversationDataAsync(activity.ChannelId, activity.Conversation.Id, data);
                     connectorClient.Conversations.ReplyToActivity(activity.CreateReply("Now I will use this image."));
                 }
-                if (activity.Text == "age")
+                else
                 {
                     var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
                     var image = data.GetProperty<string>("image");
-                    try
-                    {
-                        var result = await CognitiveServiceHelper.DetectFacesAsync(image, true, true, FaceAttributeType.Age);
-                        switch (result.Length)
-                        {
-                            case 0:
-                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I can't recognize a face. Try a new image."));
-                                break;
-                            case 1:
-                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think you're {result[0].FaceAttributes.Age} years old."));
-                                break;
-                            default:
-                                var builder = new StringBuilder();
-                                builder.AppendLine("I think you have the following ages (From left to right):  ");
-                                foreach (var face in result.OrderBy(f => f.FaceRectangle.Left))
-                                {
-                                    builder.AppendLine(face.FaceAttributes.Age + "  ");
-                                }
-                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
-                                break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}] {ex.Message}"));
-                    }
-                }
-                if (activity.Text == "gender")
-                {
-                    var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
-                    var image = data.GetProperty<string>("image");
-                    try
-                    {
-                        var result = await CognitiveServiceHelper.DetectFacesAsync(image, true, true, FaceAttributeType.Gender);
-                        switch (result.Length)
-                        {
-                            case 0:
-                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I can't recognize a face. Try a new image."));
-                                break;
-                            case 1:
-                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think you're a {result[0].FaceAttributes.Gender}."));
-                                break;
-                            default:
-                                var builder = new StringBuilder();
-                                builder.AppendLine("I think you have the following gender (From left to right):  ");
-                                foreach (var face in result.OrderBy(f => f.FaceRectangle.Left))
-                                {
-                                    builder.AppendLine(face.FaceAttributes.Gender + "  ");
-                                }
-                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
-                                break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}] {ex.Message}"));
-                    }
-                }
-                if (activity.Text == "count")
-                {
-                    var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
-                    var image = data.GetProperty<string>("image");
-                    try
-                    {
-                        var result = await CognitiveServiceHelper.DetectFacesAsync(image, true, true);
-                        switch (result.Length)
-                        {
-                            case 0:
-                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think there are no faces."));
-                                break;
-                            case 1:
-                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think there is one face."));
-                                break;
-                            default:
-                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think there are {result.Length} faces."));
-                                break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}] {ex.Message}"));
-                    }
-                }
-                if (activity.Text == "content")
-                {
 
-                    var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
-                    var image = data.GetProperty<string>("image");
                     try
                     {
-                        var result = await CognitiveServiceHelper.AnalyzeImageAsync(image, VisualFeature.Tags, VisualFeature.Description);
-                        var builder = new StringBuilder();
-                        builder.AppendLine("I found the following content:  ");
-                        builder.Append(result.Description.Captions.OrderByDescending(c => c.Confidence).FirstOrDefault()?.Text ?? "No description");
-                        builder.AppendLine("  ");
-                        builder.AppendLine(result.Tags.Aggregate("", (res, t) => res + t.Name + " (" + t.Confidence.ToString("0.00") + ")  \n"));
-                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
-                    }
-                    catch (Exception ex)
-                    {
-                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}]: {ex.Message}"));
-                    }
-                }
-                if (activity.Text == "text")
-                {
-                    var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
-                    var image = data.GetProperty<string>("image");
-                    try
-                    {
-                        var result = await CognitiveServiceHelper.RecognizeImageTextAsync(image);
-                        var builder = new StringBuilder();
-                        builder.AppendLine("I think the text on the image is:  ");
-                        foreach (var region in result.Regions)
+                        var client = new LuisClient(ConfigurationManager.AppSettings["LuisId"], ConfigurationManager.AppSettings["LuisKey"]);
+                        var predict = await client.Predict(activity.Text);
+
+                        if (predict.TopScoringIntent.Name == "Face" && predict.Entities["Attribute"][0].Value.ToLower() == "gender")
                         {
-                            builder.AppendLine(region.Lines.Aggregate(string.Empty, (res, line) => res + line.Words.Aggregate(string.Empty, (sentance, word) => sentance + " " + word.Text).Substring(1) + "  \n") + "  ");
+                            var result = await CognitiveServiceHelper.DetectFacesAsync(image, true, true, FaceAttributeType.Gender);
+                            switch (result.Length)
+                            {
+                                case 0:
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I can't recognize a face. Try a new image."));
+                                    break;
+                                case 1:
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think the person is a {result[0].FaceAttributes.Gender}."));
+                                    break;
+                                default:
+                                    var builder = new StringBuilder();
+                                    builder.AppendLine("I think you have the following gender (From left to right):  ");
+                                    foreach (var face in result.OrderBy(f => f.FaceRectangle.Left))
+                                    {
+                                        builder.AppendLine(face.FaceAttributes.Gender + "  ");
+                                    }
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
+                                    break;
+                            }
                         }
-                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
+                        else if (predict.TopScoringIntent.Name == "Face" && predict.Entities["Attribute"][0].Value.ToLower() == "age")
+                        {
+                            var result = await CognitiveServiceHelper.DetectFacesAsync(image, true, true, FaceAttributeType.Age);
+                            switch (result.Length)
+                            {
+                                case 0:
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I can't recognize a face. Try a new image."));
+                                    break;
+                                case 1:
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think the person {result[0].FaceAttributes.Age} years old."));
+                                    break;
+                                default:
+                                    var builder = new StringBuilder();
+                                    builder.AppendLine("I think you have the following ages (From left to right):  ");
+                                    foreach (var face in result.OrderBy(f => f.FaceRectangle.Left))
+                                    {
+                                        builder.AppendLine(face.FaceAttributes.Age + "  ");
+                                    }
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
+                                    break;
+                            }
+                        }
+                        else if (predict.TopScoringIntent.Name == "Face" && predict.Entities["Attribute"][0].Value.ToLower() == "how many")
+                        {
+                            var result = await CognitiveServiceHelper.DetectFacesAsync(image, true, true);
+                            switch (result.Length)
+                            {
+                                case 0:
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think there are no persons."));
+                                    break;
+                                case 1:
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think there is one person."));
+                                    break;
+                                default:
+                                    connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think there are {result.Length} persons."));
+                                    break;
+                            }
+                        }
+                        else if (predict.TopScoringIntent.Name == "Vision" && (predict.Entities["Type"][0].Value.ToLower() == "content" || predict.Entities["Type"][0].Value.ToLower() == "on"))
+                        {
+                            var result = await CognitiveServiceHelper.AnalyzeImageAsync(image, VisualFeature.Tags, VisualFeature.Description);
+                            var builder = new StringBuilder();
+                            builder.AppendLine("I found the following content:  ");
+                            builder.Append(result.Description.Captions.OrderByDescending(c => c.Confidence).FirstOrDefault()?.Text ?? "No description");
+                            builder.AppendLine("  ");
+                            builder.AppendLine(result.Tags.Aggregate("", (res, t) => res + t.Name + " (" + t.Confidence.ToString("0.00") + ")  \n"));
+                            connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
+                        }
+                        else if (predict.TopScoringIntent.Name == "Vision" && predict.Entities["Type"][0].Value.ToLower() == "text")
+                        {
+                            var result = await CognitiveServiceHelper.RecognizeImageTextAsync(image);
+                            var builder = new StringBuilder();
+                            builder.AppendLine("I think the text on the image is:  ");
+                            foreach (var region in result.Regions)
+                            {
+                                builder.AppendLine(
+                                    region.Lines.Aggregate(string.Empty, (res, line) => res + line.Words.Aggregate(string.Empty, (sentance, word) => sentance + " " + word.Text).Substring(1) + "  \n")
+                                    + "  ");
+                            }
+                            connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
+                        }
+                        else
+                        {
+                            connectorClient.Conversations.ReplyToActivity(
+                                activity.CreateReply("Sry, but I didn't understand you. Try something like `What's the age of the person?` or `What's the text on the image?`"));
+                        }
                     }
                     catch (Exception ex)
                     {
-                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}]: {ex.Message}"));
+                        connectorClient.Conversations.ReplyToActivity(
+                            activity.CreateReply($"{ex.GetType().Name}: {ex.Message}"));
                     }
                 }
             }
