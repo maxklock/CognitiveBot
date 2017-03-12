@@ -28,9 +28,6 @@ namespace CognitiveBot
         /// </summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
-            var faceClient = new FaceServiceClient(ConfigurationManager.AppSettings["FaceApi"]);
-            var visionClient = new VisionServiceClient(ConfigurationManager.AppSettings["VisionApi"]);
-
             var connectorClient = new ConnectorClient(new Uri(activity.ServiceUrl));
             if (activity.Type == ActivityTypes.Message)
             {
@@ -47,7 +44,7 @@ namespace CognitiveBot
                     var image = data.GetProperty<string>("image");
                     try
                     {
-                        var result = await faceClient.DetectAsync(image, true, true, new[] { FaceAttributeType.Age, });
+                        var result = await CognitiveServiceHelper.DetectFacesAsync(image, true, true, FaceAttributeType.Age);
                         switch (result.Length)
                         {
                             case 0:
@@ -72,13 +69,44 @@ namespace CognitiveBot
                         connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}] {ex.Message}"));
                     }
                 }
+                if (activity.Text == "gender")
+                {
+                    var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
+                    var image = data.GetProperty<string>("image");
+                    try
+                    {
+                        var result = await CognitiveServiceHelper.DetectFacesAsync(image, true, true, FaceAttributeType.Gender);
+                        switch (result.Length)
+                        {
+                            case 0:
+                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I can't recognize a face. Try a new image."));
+                                break;
+                            case 1:
+                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I think you're a {result[0].FaceAttributes.Gender}."));
+                                break;
+                            default:
+                                var builder = new StringBuilder();
+                                builder.AppendLine("I think you have the following gender (From left to right):  ");
+                                foreach (var face in result.OrderBy(f => f.FaceRectangle.Left))
+                                {
+                                    builder.AppendLine(face.FaceAttributes.Gender + "  ");
+                                }
+                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"[{ex.GetType().Name}] {ex.Message}"));
+                    }
+                }
                 if (activity.Text == "count")
                 {
                     var data = await activity.GetStateClient().BotState.GetConversationDataAsync(activity.ChannelId, activity.Conversation.Id);
                     var image = data.GetProperty<string>("image");
                     try
                     {
-                        var result = await faceClient.DetectAsync(image, true, true, new[] { FaceAttributeType.Age, });
+                        var result = await CognitiveServiceHelper.DetectFacesAsync(image, true, true);
                         switch (result.Length)
                         {
                             case 0:
@@ -104,7 +132,7 @@ namespace CognitiveBot
                     var image = data.GetProperty<string>("image");
                     try
                     {
-                        var result = await visionClient.AnalyzeImageAsync(image, new[] { VisualFeature.Tags, VisualFeature.Description });
+                        var result = await CognitiveServiceHelper.AnalyzeImageAsync(image, VisualFeature.Tags, VisualFeature.Description);
                         var builder = new StringBuilder();
                         builder.AppendLine("I found the following content:  ");
                         builder.Append(result.Description.Captions.OrderByDescending(c => c.Confidence).FirstOrDefault()?.Text ?? "No description");
@@ -123,20 +151,12 @@ namespace CognitiveBot
                     var image = data.GetProperty<string>("image");
                     try
                     {
-                        var result = await visionClient.RecognizeTextAsync(image);
+                        var result = await CognitiveServiceHelper.RecognizeImageTextAsync(image);
                         var builder = new StringBuilder();
                         builder.AppendLine("I think the text on the image is:  ");
                         foreach (var region in result.Regions)
                         {
-                            foreach (var line in region.Lines)
-                            {
-                                foreach (var word in line.Words)
-                                {
-                                    builder.Append(word.Text + " ");
-                                }
-                                builder.AppendLine(" ");
-                            }
-                            builder.AppendLine("-  ");
+                            builder.AppendLine(region.Lines.Aggregate(string.Empty, (res, line) => res + line.Words.Aggregate(string.Empty, (sentance, word) => sentance + " " + word.Text).Substring(1) + "  \n") + "  ");
                         }
                         connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder.ToString()));
                     }

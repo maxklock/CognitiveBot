@@ -1,12 +1,100 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Cognitive Bot</title>
+    <link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="libs/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
     <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="Logo.png">
 </head>
-<body style="font-family:'Segoe UI'">
-    <h1>CognitiveBot</h1>
-    <p>Describe your bot here and your terms of use etc.</p>
-    <p>Visit <a href="https://www.botframework.com/">Bot Framework</a> to register your bot. When you register it, remember to set your bot's endpoint to <pre>https://<i>your_bots_hostname</i>/api/messages</pre></p>
+<body style="font-family: 'Segoe UI'">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <div class="navbar-brand">
+                    <img src="Logo.png" alt="Logo" height="35" style="margin-top: -7px;" />
+                </div>
+                <div class="navbar-left">
+                    <a class="navbar-brand" href="#">Cognitive Bot</a>
+                </div>
+            </div>
+            <div class="navbar-collapse collapse" id="navbar">
+                <ul class="nav navbar-nav">
+                    <li><a href="#Privacy">Privacy Police</a></li>
+                    <li><a href="#Channels">Channels</a></li>
+                    <li><a href="#Services">Services</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="jumbotron">
+            <h1>Cognitive Bot</h1>
+            <p class="lead">
+                Bot to interact with the <a href="https://www.microsoft.com/cognitive-services">Microsoft Cognitive Services</a>.
+            </p>
+        </div>
+
+        <div class="page-header" id="Privacy">
+            <h1>Privacy Police</h1>
+        </div>
+        <p>
+            The Bot is storing the channel-url of the last image. The image isn't stored by the bot himself.
+            <br />
+            By using this bot, you agree to send the image to the Microsoft Cognitive Services. More informations about their privacy, you can find <a href="https://www.microsoft.com/cognitive-services">here</a>.
+        </p>
+
+        <div class="page-header" id="Channels">
+            <h1>Supported Channels</h1>
+        </div>
+        <div class="row">
+            <a class="col-md-1 text-center fa fa-3x fa-skype" target="_blank" style="text-decoration: none" href="https://join.skype.com/bot/79e66f08-01d0-41cf-8ed3-68b735d428b4"></a>
+            <a class="col-md-1 text-center fa fa-3x fa-telegram" target="_blank" style="text-decoration: none" href="https://telegram.me/cognitiveservicebot"></a>
+            <!--
+            <a class="col-md-1 text-center fa fa-3x fa-windows" style="text-decoration: none" href="https://teams.microsoft.com/l/chat/0/0?users=28:fe4a028a-769b-4053-8ea1-220f23c054f7"></a>
+            <a class="col-md-1 text-center fa fa-3x fa-facebook-square" style="text-decoration: none" href=""></a>
+            <a class="col-md-1 text-center fa fa-3x fa-slack" style="text-decoration: none" href=""></a>
+            -->
+        </div>
+        <br />
+        <div class="row">
+            <div class="text-center col-md-1">Skype</div>
+            <div class="text-center col-md-1">Telegram</div>
+            <!--
+            <div class="text-center col-md-1">Microsoft Teams</div>
+            <div class="text-center col-md-1">Facebook</div>
+            <div class="text-center col-md-1">Slack</div>
+            -->
+        </div>
+
+        <div class="page-header" id="Services">
+            <h1>Supported Services</h1>
+        </div>
+        <div class="list-group">
+            <div class="list-group-item">
+                <h4 class="list-group-item-heading"><a href="https://www.microsoft.com/cognitive-services/en-us/face-api">Face</a></h4>
+                <p class="list-group-item-text">
+                    Age
+                    <br />
+                    Gender
+                </p>
+            </div>
+            <div class="list-group-item">
+                <h4 class="list-group-item-heading"><a href="https://www.microsoft.com/cognitive-services/en-us/computer-vision-api">Computer-Vision</a></h4>
+                <p class="list-group-item-text">
+                    Analyze Image
+                    <br />
+                    Recognize Text
+                </p>
+            </div>
+        </div>
+        <br />
+        <br />
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="libs/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="libs/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>
