@@ -3,8 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Configuration;
+    using System.Runtime.InteropServices.ComTypes;
     using System.Threading.Tasks;
 
+    using Microsoft.ProjectOxford.Emotion;
+    using Microsoft.ProjectOxford.Emotion.Contract;
     using Microsoft.ProjectOxford.Face;
     using Microsoft.ProjectOxford.Vision;
     using Microsoft.ProjectOxford.Vision.Contract;
@@ -19,6 +22,8 @@
 
         private static readonly Lazy<IVisionServiceClient> VisionServiceFactory = new Lazy<IVisionServiceClient>(() => new VisionServiceClient(ConfigurationManager.AppSettings["VisionApi"]));
 
+        private static readonly Lazy<EmotionServiceClient> EmotionServiceFactory = new Lazy<EmotionServiceClient>(() => new EmotionServiceClient(ConfigurationManager.AppSettings["EmotionApi"]));
+
         #endregion
 
         #region properties
@@ -27,7 +32,14 @@
 
         public static IVisionServiceClient VisionService => VisionServiceFactory.Value;
 
+        public static EmotionServiceClient EmotionService => EmotionServiceFactory.Value;
+
         #endregion
+
+        public static async Task<Emotion[]> RecognizeEmotionsAsync(string imageUrl)
+        {
+            return await EmotionService.RecognizeAsync(imageUrl);
+        }
 
         public static async Task<Face[]> DetectFacesAsync(string imageUrl, bool returnId, bool returnLandmarks, params FaceAttributeType[] attributes)
         {

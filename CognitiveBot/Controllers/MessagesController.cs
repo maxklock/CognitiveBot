@@ -49,6 +49,50 @@ namespace CognitiveBot
                         return Request.CreateResponse(HttpStatusCode.OK);
                     }
 
+                    if (activity.Text == "emotion")
+                    {
+                        var result = await CognitiveServiceHelper.RecognizeEmotionsAsync(image);
+                        switch (result.Length)
+                        {
+                            case 0:
+                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply($"I can't recognize a face. Try a new image."));
+                                break;
+                            case 1:
+                                var emotion1 = result[0];
+                                var builder1 = new StringBuilder();
+                                builder1.AppendLine($"I think you emotions are:  \n");
+                                builder1.AppendLine($"{nameof(emotion1.Scores.Anger)} ({emotion1.Scores.Anger:0.00})  \n");
+                                builder1.AppendLine($"{nameof(emotion1.Scores.Contempt)} ({emotion1.Scores.Contempt:0.00})  \n");
+                                builder1.AppendLine($"{nameof(emotion1.Scores.Disgust)} ({emotion1.Scores.Disgust:0.00})  \n");
+                                builder1.AppendLine($"{nameof(emotion1.Scores.Fear)} ({emotion1.Scores.Fear:0.00})  \n");
+                                builder1.AppendLine($"{nameof(emotion1.Scores.Happiness)} ({emotion1.Scores.Happiness:0.00})  \n");
+                                builder1.AppendLine($"{nameof(emotion1.Scores.Neutral)} ({emotion1.Scores.Neutral:0.00})  \n");
+                                builder1.AppendLine($"{nameof(emotion1.Scores.Sadness)} ({emotion1.Scores.Sadness:0.00})  \n");
+                                builder1.AppendLine($"{nameof(emotion1.Scores.Surprise)} ({emotion1.Scores.Surprise:0.00})  \n");
+                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder1.ToString()));
+                                break;
+                            default:
+                                var builder2 = new StringBuilder();
+                                builder2.AppendLine("I think you have the following emotions (From left to right):  ");
+                                var i = 0;
+                                foreach (var emotion2 in result.OrderBy(f => f.FaceRectangle.Left))
+                                {
+                                    builder2.AppendLine($"`Face {++i}`");
+                                    builder2.AppendLine($"{nameof(emotion2.Scores.Anger)} ({emotion2.Scores.Anger:0.00})  \n");
+                                    builder2.AppendLine($"{nameof(emotion2.Scores.Contempt)} ({emotion2.Scores.Contempt:0.00})  \n");
+                                    builder2.AppendLine($"{nameof(emotion2.Scores.Disgust)} ({emotion2.Scores.Disgust:0.00})  \n");
+                                    builder2.AppendLine($"{nameof(emotion2.Scores.Fear)} ({emotion2.Scores.Fear:0.00})  \n");
+                                    builder2.AppendLine($"{nameof(emotion2.Scores.Happiness)} ({emotion2.Scores.Happiness:0.00})  \n");
+                                    builder2.AppendLine($"{nameof(emotion2.Scores.Neutral)} ({emotion2.Scores.Neutral:0.00})  \n");
+                                    builder2.AppendLine($"{nameof(emotion2.Scores.Sadness)} ({emotion2.Scores.Sadness:0.00})  \n");
+                                    builder2.AppendLine($"{nameof(emotion2.Scores.Surprise)} ({emotion2.Scores.Surprise:0.00})  \n");
+                                }
+                                connectorClient.Conversations.ReplyToActivity(activity.CreateReply(builder2.ToString()));
+                                break;
+                        }
+                        return Request.CreateResponse(HttpStatusCode.OK);
+                    }
+
                     var typing = activity.CreateReply(string.Empty);
                     typing.Type = ActivityTypes.Typing;
                     await connectorClient.Conversations.ReplyToActivityAsync(typing);
