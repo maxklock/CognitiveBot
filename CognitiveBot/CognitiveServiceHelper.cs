@@ -46,9 +46,9 @@
             return await FaceService.DetectAsync(imageUrl, returnId, returnLandmarks, attributes);
         }
 
-        public static async Task<AnalysisResult> AnalyzeImageAsync(string imageUrl, params VisualFeature[] features)
+        public static async Task<AnalysisResult> AnalyzeImageAsync(string imageUrl)
         {
-            return await VisionService.AnalyzeImageAsync(imageUrl, features);
+            return await VisionService.DescribeAsync(imageUrl, 2);
         }
 
         public static async Task<OcrResults> RecognizeImageTextAsync(string imageUrl)
