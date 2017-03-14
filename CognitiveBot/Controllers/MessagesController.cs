@@ -13,8 +13,7 @@ namespace CognitiveBot
     using System.Configuration;
     using System.Text;
     using System.Threading;
-
-    using Microsoft.Bing.Speech;
+    
     using Microsoft.Bot.Builder.Dialogs.Internals;
     using Microsoft.Cognitive.LUIS;
     using Microsoft.ProjectOxford.Face;
@@ -191,7 +190,7 @@ namespace CognitiveBot
                                 activity.CreateReply("Sorry, but I didn't understand you. Try something like `What's the age of the person?` or `What's the text on the image?`"));
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         connectorClient.Conversations.ReplyToActivity(
                             activity.CreateReply("Sry, but I made a misstake and didn't understand you. Try something like `What's the age of the person?` or `What's the text on the image?`"));
